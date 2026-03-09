@@ -1,0 +1,4 @@
+deployment:
+  tasks:
+    - export DEPLOYPATH=/home2/pvdzcoza/public_html/tax.pvdz.co.za/app
+    - /usr/bin/rsync -avz --exclude '.git' * $DEPLOYPATH
