@@ -7,151 +7,126 @@
 <link href="https://fonts.googleapis.com/css2?family=Jost:wght@200;300;400;500;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-  :root {
-    --navy:  #0d182d;
-    --gold:  #b98b38;
-    --white: #ffffff;
-    --light: #f0f0f0;
-    --mid:   #afafaf;
-    --red:   #e6422e;
-    --ink:   #1a2640;
-  }
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: "Jost", sans-serif; background: var(--light); color: var(--ink); font-weight: 300; min-height: 100vh; }
-
-  header { background: var(--navy); padding: 0 40px; display: flex; align-items: center; justify-content: space-between; height: 72px; position: sticky; top: 0; z-index: 100; }
-  .hd-left { display: flex; align-items: center; }
-  .logo-wrap { display: flex; align-items: center; gap: 14px; text-decoration: none; }
-  .logo-mark { width: 44px; height: 44px; border-radius: 50%; flex-shrink: 0; }
-  .logo-text { display: flex; flex-direction: column; gap: 2px; }
-  .logo-name { font-size: 10px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: var(--white); }
-  .logo-sub  { font-size: 8px; font-weight: 300; letter-spacing: .22em; text-transform: uppercase; color: var(--gold); }
-  .hd-div   { width: 1px; height: 32px; background: var(--red); margin: 0 20px; }
-  .hd-pod   { font-size: 9px; font-weight: 500; letter-spacing: .22em; text-transform: uppercase; color: var(--mid); }
-  .admin-badge { display: none; font-size: 8px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: var(--red); border: 1px solid rgba(230,66,46,.5); padding: 3px 10px; margin-left: 14px; }
-  .admin-badge.on { display: inline-block; }
-  .hd-btn { font-family: "Jost",sans-serif; font-size: 8px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: var(--gold); background: transparent; border: 1px solid rgba(185,139,56,.4); padding: 8px 18px; cursor: pointer; transition: background .2s; }
-  .hd-btn:hover { background: rgba(185,139,56,.1); }
-
-  .hero { background: var(--navy); padding: 52px 40px 48px; position: relative; overflow: hidden; }
-  .hero::before { content: ""; position: absolute; top: 0; bottom: 0; left: calc(50% - .5px); width: 1px; background: var(--red); opacity: .4; }
-  .hero-inner { max-width: 820px; margin: 0 auto; position: relative; z-index: 1; }
-  .hero-eye  { font-size: 8px; font-weight: 600; letter-spacing: .3em; text-transform: uppercase; color: var(--gold); margin-bottom: 18px; }
-  .hero-h1   { font-size: 30px; font-weight: 600; letter-spacing: .08em; text-transform: uppercase; color: var(--white); line-height: 1.25; margin-bottom: 18px; }
-  .hero-body { font-size: 12px; font-weight: 300; letter-spacing: .04em; color: var(--mid); line-height: 1.75; max-width: 520px; }
-  .gold-rule { height: 1px; background: linear-gradient(90deg,transparent,var(--gold),transparent); opacity: .35; }
-
-  .toolbar { background: var(--white); border-bottom: 1px solid #e2e2e2; padding: 0 40px; display: flex; align-items: center; justify-content: space-between; }
-  .filters { display: flex; }
-  .f-btn { font-family: "Jost",sans-serif; font-size: 8px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: var(--mid); background: transparent; border: none; border-bottom: 2px solid transparent; padding: 18px 18px 16px; cursor: pointer; transition: all .2s; }
-  .f-btn:hover { color: var(--navy); }
-  .f-btn.active { color: var(--navy); border-bottom-color: var(--gold); }
-  .sub-btn { font-family: "Jost",sans-serif; font-size: 8px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; background: var(--gold); color: var(--white); border: none; padding: 10px 22px; cursor: pointer; transition: background .2s; }
-  .sub-btn:hover { background: #9e7530; }
-
-  .main { max-width: 820px; margin: 0 auto; padding: 36px 40px 80px; }
-
-  .card { background: var(--white); border-left: 3px solid transparent; margin-bottom: 2px; display: flex; transition: border-left-color .2s; }
-  .card:hover { border-left-color: rgba(185,139,56,.4); }
-  .card.featured { border-left-color: var(--gold); }
-  .vote-col { width: 68px; flex-shrink: 0; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; padding: 22px 0 18px; border-right: 1px solid var(--light); gap: 4px; }
-  .vote-up { background: transparent; border: none; cursor: pointer; color: var(--mid); font-size: 14px; line-height: 1; padding: 4px; transition: color .15s, transform .15s; }
-  .vote-up:hover { color: var(--gold); transform: translateY(-2px); }
-  .vote-up.voted { color: var(--gold); }
-  .vote-num { font-size: 20px; font-weight: 600; color: var(--navy); letter-spacing: -.02em; line-height: 1; }
-  .card-body { flex: 1; padding: 22px 26px 18px; }
-  .card-meta { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; }
-  .tag { font-size: 7px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; padding: 3px 9px; border: 1px solid; }
-  .tag-topic { color: var(--navy); border-color: rgba(13,24,45,.2); background: rgba(13,24,45,.03); }
-  .tag-feat  { color: var(--gold); border-color: rgba(185,139,56,.4); background: rgba(185,139,56,.05); }
-  .tag-open  { color: var(--red);  border-color: rgba(230,66,46,.3);  background: rgba(230,66,46,.04); }
-  .card-title { font-size: 13px; font-weight: 600; letter-spacing: .05em; text-transform: uppercase; color: var(--navy); margin-bottom: 8px; line-height: 1.4; }
-  .card-desc  { font-size: 12px; font-weight: 300; letter-spacing: .02em; color: #4a5568; line-height: 1.75; margin-bottom: 12px; }
-  .card-foot  { display: flex; align-items: center; justify-content: space-between; }
-  .ep-label { font-size: 8px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; color: var(--gold); }
-  .ep-label::before { content: "\25B6  "; font-size: 6px; }
-  .card-date { font-size: 8px; font-weight: 300; letter-spacing: .1em; color: var(--mid); }
-
-  .admin-row { display: none; gap: 8px; margin-top: 12px; align-items: center; flex-wrap: wrap; }
-  .admin-row.on { display: flex; }
-  .ctrl { font-family: "Jost",sans-serif; font-size: 7px; font-weight: 600; letter-spacing: .15em; text-transform: uppercase; padding: 5px 12px; border: 1px solid; cursor: pointer; background: transparent; transition: all .15s; }
-  .ctrl-feat { color: var(--gold); border-color: var(--gold); }
-  .ctrl-feat:hover { background: var(--gold); color: var(--white); }
-  .ctrl-ep   { color: var(--navy); border-color: var(--navy); }
-  .ctrl-ep:hover { background: var(--navy); color: var(--white); }
-  .ctrl-del  { color: var(--red); border-color: var(--red); }
-  .ctrl-del:hover { background: var(--red); color: var(--white); }
-  .ep-in { font-family: "Jost",sans-serif; font-size: 11px; font-weight: 300; border: 1px solid #ddd; padding: 5px 10px; width: 150px; outline: none; color: var(--navy); }
-  .ep-in:focus { border-color: var(--gold); }
-
-  /* Static text edit mode */
-  .edit-mode [data-static] { outline: 1px dashed rgba(185,139,56,.6); outline-offset: 3px; cursor: text; transition: outline-color .15s; }
-  .edit-mode [data-static]:hover { outline-color: var(--gold); }
-  .edit-mode [data-static]:focus { outline: 2px solid var(--gold); background: rgba(185,139,56,.06); }
-  .edit-banner { display: none; background: var(--gold); color: var(--white); font-size: 8px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; text-align: center; padding: 8px; }
-  .edit-mode .edit-banner { display: block; }
-
-  .loading { text-align: center; padding: 60px 0; }
-  .loading-dot { display: inline-block; width: 8px; height: 8px; background: var(--gold); border-radius: 50%; margin: 0 3px; animation: bounce .9s infinite; }
-  .loading-dot:nth-child(2) { animation-delay: .15s; }
-  .loading-dot:nth-child(3) { animation-delay: .3s; }
-  @keyframes bounce { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-8px)} }
-
-  .empty { text-align: center; padding: 80px 0; }
-  .empty-sym { font-size: 28px; color: var(--mid); margin-bottom: 14px; }
-  .empty-msg { font-size: 9px; font-weight: 600; letter-spacing: .2em; text-transform: uppercase; color: var(--mid); }
-  .err-banner { text-align: center; padding: 40px; font-size: 11px; color: var(--red); }
-
-  .overlay { display: none; position: fixed; inset: 0; background: rgba(13,24,45,.78); z-index: 200; align-items: center; justify-content: center; }
-  .overlay.on { display: flex; }
-  .modal { background: var(--white); width: 100%; max-width: 500px; margin: 20px; }
-  .modal-hd { background: var(--navy); padding: 22px 28px; display: flex; align-items: center; justify-content: space-between; }
-  .modal-hd-l { display: flex; align-items: center; gap: 12px; }
-  .modal-red { width: 1px; height: 18px; background: var(--red); }
-  .modal-title { font-size: 9px; font-weight: 600; letter-spacing: .25em; text-transform: uppercase; color: var(--white); }
-  .modal-x { background: transparent; border: none; color: var(--mid); font-size: 16px; cursor: pointer; line-height: 1; padding: 2px; transition: color .15s; }
-  .modal-x:hover { color: var(--white); }
-  .modal-bd { padding: 28px; }
-  .field { margin-bottom: 18px; }
-  .field label { display: block; font-size: 7px; font-weight: 600; letter-spacing: .24em; text-transform: uppercase; color: var(--navy); margin-bottom: 6px; }
-  .field input, .field textarea, .field select { font-family: "Jost",sans-serif; font-size: 12px; font-weight: 300; width: 100%; border: 1px solid #ddd; padding: 10px 13px; color: var(--navy); outline: none; background: var(--white); transition: border-color .15s; -webkit-appearance: none; }
-  .field input:focus, .field textarea:focus, .field select:focus { border-color: var(--gold); }
-  .field textarea { resize: vertical; min-height: 88px; }
-  .field-note { font-size: 8px; font-weight: 300; color: var(--mid); margin-top: 5px; }
-  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 6px; }
-  .btn-sec { font-family: "Jost",sans-serif; font-size: 8px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; padding: 9px 18px; border: 1px solid #ddd; background: transparent; color: var(--mid); cursor: pointer; transition: all .15s; }
-  .btn-sec:hover { border-color: var(--navy); color: var(--navy); }
-  .btn-pri { font-family: "Jost",sans-serif; font-size: 8px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; padding: 9px 22px; border: none; background: var(--gold); color: var(--white); cursor: pointer; transition: background .15s; }
-  .btn-pri:hover { background: #9e7530; }
-  .btn-pri:disabled { background: var(--mid); cursor: not-allowed; }
-  .field-err { font-size: 9px; color: var(--red); margin-bottom: 12px; display: none; }
-  .modal-tabs { display: flex; border-bottom: 1px solid #eee; margin-bottom: 20px; }
-  .modal-tab { font-family: "Jost",sans-serif; font-size: 8px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; padding: 10px 16px 8px; border: none; background: transparent; color: var(--mid); cursor: pointer; border-bottom: 2px solid transparent; transition: all .15s; }
-  .modal-tab.active { color: var(--navy); border-bottom-color: var(--gold); }
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
-
-  .toast { display: none; position: fixed; bottom: 28px; right: 28px; background: var(--navy); color: var(--white); font-size: 9px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase; padding: 13px 20px; border-left: 3px solid var(--gold); z-index: 300; animation: fadeUp .25s ease; }
-  @keyframes fadeUp { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
-
-  footer { background: var(--navy); border-top: 1px solid rgba(185,139,56,.18); padding: 26px 40px; display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 14px; }
-  .footer-brand { font-size: 8px; font-weight: 600; letter-spacing: .22em; text-transform: uppercase; color: var(--gold); }
-  .footer-links { display: flex; gap: 22px; flex-wrap: wrap; }
-  .footer-link { font-size: 9px; font-weight: 300; letter-spacing: .08em; color: var(--mid); text-decoration: none; transition: color .15s; }
-  .footer-link:hover { color: var(--gold); }
-  .footer-copy { width: 100%; font-size: 8px; font-weight: 300; letter-spacing: .08em; color: rgba(175,175,175,.45); margin-top: 2px; }
-
-  @media (max-width:600px) {
-    header, .hero, .toolbar, .main, footer { padding-left:20px; padding-right:20px; }
-    .hero-h1 { font-size: 22px; }
-    .hero::before { display: none; }
-  }
+  :root { --navy:#0d182d; --gold:#b98b38; --white:#ffffff; --light:#f0f0f0; --mid:#afafaf; --red:#e6422e; --ink:#1a2640; }
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:"Jost",sans-serif;background:var(--light);color:var(--ink);font-weight:300;min-height:100vh;}
+  header{background:var(--navy);padding:0 40px;display:flex;align-items:center;justify-content:space-between;height:72px;position:sticky;top:0;z-index:100;}
+  .hd-left{display:flex;align-items:center;}
+  .logo-wrap{display:flex;align-items:center;gap:14px;text-decoration:none;}
+  .logo-mark{width:44px;height:44px;border-radius:50%;flex-shrink:0;}
+  .logo-text{display:flex;flex-direction:column;gap:2px;}
+  .logo-name{font-size:10px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--white);}
+  .logo-sub{font-size:8px;font-weight:300;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);}
+  .hd-div{width:1px;height:32px;background:var(--red);margin:0 20px;}
+  .hd-pod{font-size:9px;font-weight:500;letter-spacing:.22em;text-transform:uppercase;color:var(--mid);}
+  .admin-badge{display:none;font-size:8px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--red);border:1px solid rgba(230,66,46,.5);padding:3px 10px;margin-left:14px;}
+  .admin-badge.on{display:inline-block;}
+  .hd-btn{font-family:"Jost",sans-serif;font-size:8px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);background:transparent;border:1px solid rgba(185,139,56,.4);padding:8px 18px;cursor:pointer;transition:background .2s;}
+  .hd-btn:hover{background:rgba(185,139,56,.1);}
+  .hero{background:var(--navy);padding:52px 40px 48px;position:relative;overflow:hidden;}
+  .hero-inner{max-width:820px;margin:0 auto;position:relative;z-index:1;}
+  .hero-eye{font-size:8px;font-weight:600;letter-spacing:.3em;text-transform:uppercase;color:var(--gold);margin-bottom:18px;}
+  .hero-h1{font-size:30px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--white);line-height:1.25;margin-bottom:18px;}
+  .hero-body{font-size:12px;font-weight:300;letter-spacing:.04em;color:var(--mid);line-height:1.75;max-width:520px;}
+  .gold-rule{height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.35;}
+  .toolbar{background:var(--white);border-bottom:1px solid #e2e2e2;padding:0 40px;display:flex;align-items:center;justify-content:space-between;}
+  .filters{display:flex;}
+  .f-btn{font-family:"Jost",sans-serif;font-size:8px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--mid);background:transparent;border:none;border-bottom:2px solid transparent;padding:18px 18px 16px;cursor:pointer;transition:all .2s;}
+  .f-btn:hover{color:var(--navy);}
+  .f-btn.active{color:var(--navy);border-bottom-color:var(--gold);}
+  .sub-btn{font-family:"Jost",sans-serif;font-size:8px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;background:var(--gold);color:var(--white);border:none;padding:10px 22px;cursor:pointer;transition:background .2s;}
+  .sub-btn:hover{background:#9e7530;}
+  .main{max-width:820px;margin:0 auto;padding:36px 40px 80px;}
+  .card{background:var(--white);border-left:3px solid transparent;margin-bottom:2px;display:flex;transition:border-left-color .2s;}
+  .card:hover{border-left-color:rgba(185,139,56,.4);}
+  .card.featured{border-left-color:var(--gold);}
+  .vote-col{width:68px;flex-shrink:0;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:22px 0 18px;border-right:1px solid var(--light);gap:4px;}
+  .vote-up{background:transparent;border:none;cursor:pointer;color:var(--mid);font-size:14px;line-height:1;padding:4px;transition:color .15s,transform .15s;}
+  .vote-up:hover{color:var(--gold);transform:translateY(-2px);}
+  .vote-up.voted{color:var(--gold);}
+  .vote-num{font-size:20px;font-weight:600;color:var(--navy);letter-spacing:-.02em;line-height:1;}
+  .card-body{flex:1;padding:22px 26px 18px;}
+  .card-meta{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;}
+  .tag{font-size:7px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;padding:3px 9px;border:1px solid;}
+  .tag-topic{color:var(--navy);border-color:rgba(13,24,45,.2);background:rgba(13,24,45,.03);}
+  .tag-feat{color:var(--gold);border-color:rgba(185,139,56,.4);background:rgba(185,139,56,.05);}
+  .tag-open{color:var(--red);border-color:rgba(230,66,46,.3);background:rgba(230,66,46,.04);}
+  .card-title{font-size:13px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--navy);margin-bottom:8px;line-height:1.4;}
+  .card-desc{font-size:12px;font-weight:300;letter-spacing:.02em;color:#4a5568;line-height:1.75;margin-bottom:12px;}
+  .card-foot{display:flex;align-items:center;justify-content:space-between;}
+  .ep-label{font-size:8px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;color:var(--gold);}
+  .ep-label::before{content:"\25B6  ";font-size:6px;}
+  .card-date{font-size:8px;font-weight:300;letter-spacing:.1em;color:var(--mid);}
+  .admin-row{display:none;gap:8px;margin-top:12px;align-items:center;flex-wrap:wrap;}
+  .admin-row.on{display:flex;}
+  .ctrl{font-family:"Jost",sans-serif;font-size:7px;font-weight:600;letter-spacing:.15em;text-transform:uppercase;padding:5px 12px;border:1px solid;cursor:pointer;background:transparent;transition:all .15s;}
+  .ctrl-feat{color:var(--gold);border-color:var(--gold);}
+  .ctrl-feat:hover{background:var(--gold);color:var(--white);}
+  .ctrl-ep{color:var(--navy);border-color:var(--navy);}
+  .ctrl-ep:hover{background:var(--navy);color:var(--white);}
+  .ctrl-del{color:var(--red);border-color:var(--red);}
+  .ctrl-del:hover{background:var(--red);color:var(--white);}
+  .ep-in{font-family:"Jost",sans-serif;font-size:11px;font-weight:300;border:1px solid #ddd;padding:5px 10px;width:150px;outline:none;color:var(--navy);}
+  .ep-in:focus{border-color:var(--gold);}
+  .edit-mode [data-static]{outline:1px dashed rgba(185,139,56,.6);outline-offset:3px;cursor:text;}
+  .edit-mode [data-static]:hover{outline-color:var(--gold);}
+  .edit-mode [data-static]:focus{outline:2px solid var(--gold);background:rgba(185,139,56,.06);}
+  .edit-banner{display:none;background:var(--gold);color:var(--white);font-size:8px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;text-align:center;padding:8px;}
+  .edit-mode .edit-banner{display:block;}
+  .loading{text-align:center;padding:60px 0;}
+  .loading-dot{display:inline-block;width:8px;height:8px;background:var(--gold);border-radius:50%;margin:0 3px;animation:bounce .9s infinite;}
+  .loading-dot:nth-child(2){animation-delay:.15s;}
+  .loading-dot:nth-child(3){animation-delay:.3s;}
+  @keyframes bounce{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-8px)}}
+  .empty{text-align:center;padding:80px 0;}
+  .empty-sym{font-size:28px;color:var(--mid);margin-bottom:14px;}
+  .empty-msg{font-size:9px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--mid);}
+  .err-banner{text-align:center;padding:40px;font-size:11px;color:var(--red);}
+  .overlay{display:none;position:fixed;inset:0;background:rgba(13,24,45,.78);z-index:200;align-items:center;justify-content:center;}
+  .overlay.on{display:flex;}
+  .modal{background:var(--white);width:100%;max-width:500px;margin:20px;}
+  .modal-hd{background:var(--navy);padding:22px 28px;display:flex;align-items:center;justify-content:space-between;}
+  .modal-hd-l{display:flex;align-items:center;gap:12px;}
+  .modal-red{width:1px;height:18px;background:var(--red);}
+  .modal-title{font-size:9px;font-weight:600;letter-spacing:.25em;text-transform:uppercase;color:var(--white);}
+  .modal-x{background:transparent;border:none;color:var(--mid);font-size:16px;cursor:pointer;line-height:1;padding:2px;transition:color .15s;}
+  .modal-x:hover{color:var(--white);}
+  .modal-bd{padding:28px;}
+  .field{margin-bottom:18px;}
+  .field label{display:block;font-size:7px;font-weight:600;letter-spacing:.24em;text-transform:uppercase;color:var(--navy);margin-bottom:6px;}
+  .field input,.field textarea,.field select{font-family:"Jost",sans-serif;font-size:12px;font-weight:300;width:100%;border:1px solid #ddd;padding:10px 13px;color:var(--navy);outline:none;background:var(--white);transition:border-color .15s;-webkit-appearance:none;}
+  .field input:focus,.field textarea:focus,.field select:focus{border-color:var(--gold);}
+  .field textarea{resize:vertical;min-height:88px;}
+  .field-note{font-size:8px;font-weight:300;color:var(--mid);margin-top:5px;}
+  .modal-actions{display:flex;gap:10px;justify-content:flex-end;margin-top:6px;}
+  .btn-sec{font-family:"Jost",sans-serif;font-size:8px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;padding:9px 18px;border:1px solid #ddd;background:transparent;color:var(--mid);cursor:pointer;transition:all .15s;}
+  .btn-sec:hover{border-color:var(--navy);color:var(--navy);}
+  .btn-pri{font-family:"Jost",sans-serif;font-size:8px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;padding:9px 22px;border:none;background:var(--gold);color:var(--white);cursor:pointer;transition:background .15s;}
+  .btn-pri:hover{background:#9e7530;}
+  .btn-pri:disabled{background:var(--mid);cursor:not-allowed;}
+  .field-err{font-size:9px;color:var(--red);margin-bottom:12px;display:none;}
+  .modal-tabs{display:flex;border-bottom:1px solid #eee;margin-bottom:20px;}
+  .modal-tab{font-family:"Jost",sans-serif;font-size:8px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;padding:10px 16px 8px;border:none;background:transparent;color:var(--mid);cursor:pointer;border-bottom:2px solid transparent;transition:all .15s;}
+  .modal-tab.active{color:var(--navy);border-bottom-color:var(--gold);}
+  .tab-panel{display:none;}
+  .tab-panel.active{display:block;}
+  .toast{display:none;position:fixed;bottom:28px;right:28px;background:var(--navy);color:var(--white);font-size:9px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;padding:13px 20px;border-left:3px solid var(--gold);z-index:300;animation:fadeUp .25s ease;}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+  footer{background:var(--navy);border-top:1px solid rgba(185,139,56,.18);padding:26px 40px;display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:14px;}
+  .footer-brand{font-size:8px;font-weight:600;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);}
+  .footer-links{display:flex;gap:22px;flex-wrap:wrap;}
+  .footer-link{font-size:9px;font-weight:300;letter-spacing:.08em;color:var(--mid);text-decoration:none;transition:color .15s;}
+  .footer-link:hover{color:var(--gold);}
+  .footer-copy{width:100%;font-size:8px;font-weight:300;letter-spacing:.08em;color:rgba(175,175,175,.45);margin-top:2px;}
+  /* DEBUG PANEL */
+  #debugPanel{display:none;position:fixed;bottom:0;left:0;right:0;background:rgba(0,0,0,.85);color:#0f0;font-family:monospace;font-size:11px;padding:10px 14px;max-height:180px;overflow-y:auto;z-index:9999;white-space:pre-wrap;border-top:2px solid var(--gold);}
+  #debugPanel.on{display:block;}
+  #debugToggle{position:fixed;bottom:0;left:0;font-family:monospace;font-size:9px;background:var(--navy);color:var(--gold);border:1px solid var(--gold);padding:4px 10px;cursor:pointer;z-index:10000;}
+  @media(max-width:600px){header,.hero,.toolbar,.main,footer{padding-left:20px;padding-right:20px;}.hero-h1{font-size:22px;}}
 </style>
 </head>
 <body>
-
 <div class="edit-banner">&#9998;&nbsp; Text edit mode &mdash; click any highlighted element to edit &mdash; click <strong>Save Text Changes</strong> when done</div>
-
 <header>
   <div class="hd-left">
     <a class="logo-wrap" href="#">
@@ -167,7 +142,6 @@
   </div>
   <button class="hd-btn" id="btnAdmin">Admin</button>
 </header>
-
 <div class="hero">
   <div class="hero-inner">
     <div class="hero-eye" data-static="hero-eye" contenteditable="false">Community &middot; Case Scenarios</div>
@@ -176,7 +150,6 @@
   </div>
 </div>
 <div class="gold-rule"></div>
-
 <div class="toolbar">
   <div class="filters">
     <button class="f-btn active" data-filter="all">All</button>
@@ -185,16 +158,14 @@
   </div>
   <button class="sub-btn" id="btnSubmit">+ Submit a Scenario</button>
 </div>
-
 <div class="main" id="list">
   <div class="loading"><div class="loading-dot"></div><div class="loading-dot"></div><div class="loading-dot"></div></div>
 </div>
-
 <footer>
   <div class="footer-brand" data-static="footer-brand" contenteditable="false">Tax Break &middot; PvdZ Consulting</div>
   <div class="footer-links">
     <a class="footer-link" href="https://tax.pvdz.co.za" target="_blank" data-static="footer-link-1" contenteditable="false">tax.pvdz.co.za</a>
-    <a class="footer-link" href="/cdn-cgi/l/email-protection#6818010d1c0d1a28181e0c12460b07461209" data-static="footer-link-2" contenteditable="false"><span class="__cf_email__" data-cfemail="5c2c353928392e1c2c2a3826723f3372263d">[email&#160;protected]</span></a>
+    <a class="footer-link" href="mailto:pieter@pvdz.co.za" data-static="footer-link-2" contenteditable="false">pieter@pvdz.co.za</a>
     <a class="footer-link" href="tel:+27834175904" data-static="footer-link-3" contenteditable="false">+27 083 417 5904</a>
   </div>
   <div class="footer-copy" data-static="footer-copy" contenteditable="false">&copy; 2025 Pieter van der Zwan &amp; Associates. All rights reserved.</div>
@@ -203,13 +174,10 @@
 <!-- SUBMIT MODAL -->
 <div class="overlay" id="submitModal">
   <div class="modal">
-    <div class="modal-hd">
-      <div class="modal-hd-l"><div class="modal-red"></div><span class="modal-title">Submit a Case Scenario</span></div>
-      <button class="modal-x" id="btnSubmitClose">&#10005;</button>
-    </div>
+    <div class="modal-hd"><div class="modal-hd-l"><div class="modal-red"></div><span class="modal-title">Submit a Case Scenario</span></div><button class="modal-x" id="btnSubmitClose">&#10005;</button></div>
     <div class="modal-bd">
-      <div class="field"><label>Scenario Title</label><input type="text" id="sTitle" placeholder="Brief descriptive title — no identifying details"></div>
-      <div class="field"><label>Description</label><textarea id="sDesc" placeholder="Describe the scenario in anonymised terms — facts, structure, and the tax question at issue."></textarea><div class="field-note">Do not include client names, entity names, or any identifying information.</div></div>
+      <div class="field"><label>Scenario Title</label><input type="text" id="sTitle" placeholder="Brief descriptive title"></div>
+      <div class="field"><label>Description</label><textarea id="sDesc" placeholder="Describe the scenario in anonymised terms."></textarea><div class="field-note">Do not include client names, entity names, or any identifying information.</div></div>
       <div class="field"><label>Topic Area</label>
         <select id="sTopic">
           <option value="">Select a topic…</option>
@@ -226,10 +194,7 @@
         </select>
       </div>
       <div class="field-err" id="submitErr">Please complete all fields.</div>
-      <div class="modal-actions">
-        <button class="btn-sec" id="btnSubmitCancel">Cancel</button>
-        <button class="btn-pri" id="btnSubmitSave">Submit Scenario</button>
-      </div>
+      <div class="modal-actions"><button class="btn-sec" id="btnSubmitCancel">Cancel</button><button class="btn-pri" id="btnSubmitSave">Submit Scenario</button></div>
     </div>
   </div>
 </div>
@@ -237,17 +202,11 @@
 <!-- PIN MODAL -->
 <div class="overlay" id="pinModal">
   <div class="modal">
-    <div class="modal-hd">
-      <div class="modal-hd-l"><div class="modal-red"></div><span class="modal-title">Admin Access</span></div>
-      <button class="modal-x" id="btnPinClose">&#10005;</button>
-    </div>
+    <div class="modal-hd"><div class="modal-hd-l"><div class="modal-red"></div><span class="modal-title">Admin Access</span></div><button class="modal-x" id="btnPinClose">&#10005;</button></div>
     <div class="modal-bd">
       <div class="field"><label>PIN</label><input type="password" id="pinInput" placeholder="Enter admin PIN"></div>
       <div class="field-err" id="pinErr">Incorrect PIN — please try again.</div>
-      <div class="modal-actions">
-        <button class="btn-sec" id="btnPinCancel">Cancel</button>
-        <button class="btn-pri" id="btnPinUnlock">Unlock</button>
-      </div>
+      <div class="modal-actions"><button class="btn-sec" id="btnPinCancel">Cancel</button><button class="btn-pri" id="btnPinUnlock">Unlock</button></div>
     </div>
   </div>
 </div>
@@ -255,22 +214,25 @@
 <!-- ADMIN MODAL -->
 <div class="overlay" id="adminModal">
   <div class="modal">
-    <div class="modal-hd">
-      <div class="modal-hd-l"><div class="modal-red"></div><span class="modal-title">Admin Panel</span></div>
-      <button class="modal-x" id="btnAdminClose">&#10005;</button>
-    </div>
+    <div class="modal-hd"><div class="modal-hd-l"><div class="modal-red"></div><span class="modal-title">Admin Panel</span></div><button class="modal-x" id="btnAdminClose">&#10005;</button></div>
     <div class="modal-bd">
       <div class="modal-tabs">
         <button class="modal-tab active" data-tab="content">Scenarios</button>
         <button class="modal-tab" data-tab="text">Edit Text</button>
+        <button class="modal-tab" data-tab="debug">Debug</button>
       </div>
       <div class="tab-panel active" id="tab-content">
         <p style="font-size:11px;font-weight:300;color:#555;line-height:1.7;margin-bottom:20px;">Use the controls on each scenario card to feature, assign episode references, or delete. All changes save to the database immediately.</p>
         <div class="modal-actions"><button class="btn-pri" id="btnAdminDone">Close</button></div>
       </div>
       <div class="tab-panel" id="tab-text">
-        <p style="font-size:11px;font-weight:300;color:#555;line-height:1.7;margin-bottom:20px;">Edit headings, labels and descriptions directly on the page. Click <strong>Enable Text Editing</strong> to begin. When done, click <strong>Save Text Changes</strong> — all edits are saved to the database and will persist for all visitors.</p>
+        <p style="font-size:11px;font-weight:300;color:#555;line-height:1.7;margin-bottom:20px;">Edit headings, labels and descriptions directly on the page. When done, click <strong>Save Text Changes</strong> — all edits are saved to the database.</p>
         <div class="modal-actions"><button class="btn-pri" id="btnEnableEdit">Enable Text Editing</button></div>
+      </div>
+      <div class="tab-panel" id="tab-debug">
+        <p style="font-size:11px;font-weight:300;color:#555;line-height:1.7;margin-bottom:12px;">Diagnostic log — shows what the app is doing and any errors.</p>
+        <pre id="debugLog" style="font-size:10px;font-family:monospace;background:#f8f8f8;padding:12px;max-height:200px;overflow-y:auto;color:#333;white-space:pre-wrap;border:1px solid #eee;"></pre>
+        <div class="modal-actions" style="margin-top:12px;"><button class="btn-sec" id="btnCopyLog">Copy Log</button><button class="btn-pri" id="btnAdminDone2">Close</button></div>
       </div>
     </div>
   </div>
@@ -278,19 +240,28 @@
 
 <div class="toast" id="toast"></div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script>
 (function() {
-  var SUPABASE_URL = 'https://jrjycyspwhbsxdpwmthr.supabase.co';
-  var SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpyanljeXNwd2hic3hkcHdtdGhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI0Mjk0MTcsImV4cCI6MjA4ODAwNTQxN30.ByNGRGs3SstatMrDsbE-2IJm31ir5b6YHjZYkbj8gKY';
+  var SB_URL = 'https://jrjycyspwhbsxdpwmthr.supabase.co';
+  var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpyanljeXNwd2hic3hkcHdtdGhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI0Mjk0MTcsImV4cCI6MjA4ODAwNTQxN30.ByNGRGs3SstatMrDsbE-2IJm31ir5b6YHjZYkbj8gKY';
   var PIN = '8316';
   var isAdmin = false;
   var isEditMode = false;
   var activeFilter = 'all';
   var votedIds = {};
+  var logs = [];
 
-  var sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+  var sb = supabase.createClient(SB_URL, SB_KEY);
 
-  /* ── TOAST ── */
+  function log(msg) {
+    var ts = new Date().toISOString().substr(11,8);
+    logs.push(ts + ' ' + msg);
+    var el = document.getElementById('debugLog');
+    if (el) el.textContent = logs.join('\n');
+  }
+
+  window.onerror = function(msg, src, line) { log('JS ERROR: ' + msg + ' (line:' + line + ')'); };
+
   function toast(msg, isErr) {
     var el = document.getElementById('toast');
     el.textContent = msg;
@@ -300,191 +271,138 @@
     window._tt = setTimeout(function(){ el.style.display = 'none'; }, 3500);
   }
 
-  /* ── LOAD SETTINGS ── */
   function loadSettings() {
+    log('Loading settings...');
     sb.from('settings').select('key, value')
       .then(function(res) {
-        if (res.error || !res.data) return;
+        if (res.error) { log('SETTINGS ERROR: ' + JSON.stringify(res.error)); return; }
+        log('Settings OK: ' + res.data.length + ' rows');
         res.data.forEach(function(row) {
           var el = document.querySelector('[data-static="' + row.key + '"]');
           if (el) el.textContent = row.value;
         });
-      });
+      }).catch(function(e){ log('SETTINGS EXCEPTION: ' + e.message); });
   }
 
-  /* ── SAVE SETTINGS ── */
   function saveSettings() {
     var els = document.querySelectorAll('[data-static]');
     var updates = [];
     els.forEach(function(el) {
       updates.push({ key: el.getAttribute('data-static'), value: el.textContent.trim() });
     });
-
     var btn = document.getElementById('btnAdmin');
     btn.textContent = 'Saving…';
     btn.disabled = true;
-
-    // Upsert all settings
+    log('Saving ' + updates.length + ' settings...');
     sb.from('settings').upsert(updates, { onConflict: 'key' })
       .then(function(res) {
         btn.disabled = false;
-        if (res.error) {
-          toast('Could not save text changes: ' + res.error.message, true);
-          btn.textContent = 'Save Text Changes';
-          return;
-        }
+        if (res.error) { log('SAVE ERROR: ' + JSON.stringify(res.error)); toast('Could not save: ' + res.error.message, true); btn.textContent = 'Save Text Changes'; return; }
+        log('Settings saved OK');
         exitEditMode();
         toast('Text changes saved');
-      });
+      }).catch(function(e){ log('SAVE EXCEPTION: ' + e.message); btn.disabled = false; btn.textContent = 'Save Text Changes'; });
   }
 
-  /* ── RENDER SCENARIOS ── */
   function render(data) {
     var el = document.getElementById('list');
     var list = data.slice().sort(function(a,b){ return b.votes - a.votes; });
     if (activeFilter === 'featured') list = list.filter(function(s){ return s.featured; });
     if (activeFilter === 'open')     list = list.filter(function(s){ return !s.featured; });
-
     if (!list.length) {
       el.innerHTML = '<div class="empty"><div class="empty-sym">&#9671;</div><div class="empty-msg">No scenarios in this category</div></div>';
       return;
     }
-
     el.innerHTML = list.map(function(s) {
       var voted = !!votedIds[s.id];
-      return '<div class="card' + (s.featured ? ' featured' : '') + '" data-id="' + s.id + '">' +
+      return '<div class="card' + (s.featured?' featured':'') + '" data-id="' + s.id + '">' +
         '<div class="vote-col">' +
-          '<button class="vote-up' + (voted ? ' voted' : '') + '" data-action="vote" data-id="' + s.id + '" data-votes="' + s.votes + '" data-voted="' + (voted?'1':'0') + '">▲</button>' +
+          '<button class="vote-up' + (voted?' voted':'') + '" data-action="vote" data-id="' + s.id + '" data-votes="' + s.votes + '" data-voted="' + (voted?'1':'0') + '">▲</button>' +
           '<div class="vote-num">' + s.votes + '</div>' +
         '</div>' +
         '<div class="card-body">' +
           '<div class="card-meta">' +
             '<span class="tag tag-topic">' + s.topic + '</span>' +
-            (s.featured ? '<span class="tag tag-feat">Featured</span>' : '<span class="tag tag-open">Open</span>') +
+            (s.featured?'<span class="tag tag-feat">Featured</span>':'<span class="tag tag-open">Open</span>') +
           '</div>' +
           '<div class="card-title">' + s.title + '</div>' +
           '<div class="card-desc">' + s.description + '</div>' +
           '<div class="card-foot">' +
-            '<div>' + (s.episode
-              ? '<span class="ep-label">' + s.episode + '</span>'
-              : '<span style="font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--mid)">Pending episode</span>') + '</div>' +
+            '<div>' + (s.episode?'<span class="ep-label">'+s.episode+'</span>':'<span style="font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--mid)">Pending episode</span>') + '</div>' +
             '<span class="card-date">Submitted ' + s.submitted + '</span>' +
           '</div>' +
-          (isAdmin ? '<div class="admin-row on">' +
-            '<button class="ctrl ctrl-feat" data-action="feat" data-id="' + s.id + '" data-featured="' + (s.featured?'1':'0') + '">' + (s.featured ? 'Unfeature' : 'Feature') + '</button>' +
-            '<input class="ep-in" data-id="' + s.id + '" placeholder="Episode ref…" value="' + (s.episode || '') + '">' +
+          (isAdmin?'<div class="admin-row on">' +
+            '<button class="ctrl ctrl-feat" data-action="feat" data-id="' + s.id + '" data-featured="' + (s.featured?'1':'0') + '">' + (s.featured?'Unfeature':'Feature') + '</button>' +
+            '<input class="ep-in" data-id="' + s.id + '" placeholder="Episode ref…" value="' + (s.episode||'') + '">' +
             '<button class="ctrl ctrl-ep" data-action="ep-save" data-id="' + s.id + '">Save ep.</button>' +
             '<button class="ctrl ctrl-del" data-action="del" data-id="' + s.id + '">Delete</button>' +
-          '</div>' : '') +
-        '</div>' +
-      '</div>';
+          '</div>':'') +
+        '</div></div>';
     }).join('');
   }
 
-  /* ── LOAD SCENARIOS ── */
   function load() {
-    document.getElementById('list').innerHTML =
-      '<div class="loading"><div class="loading-dot"></div><div class="loading-dot"></div><div class="loading-dot"></div></div>';
-    sb.from('scenarios').select('*').order('votes', {ascending: false})
+    log('Loading scenarios...');
+    document.getElementById('list').innerHTML = '<div class="loading"><div class="loading-dot"></div><div class="loading-dot"></div><div class="loading-dot"></div></div>';
+    sb.from('scenarios').select('*').order('votes',{ascending:false})
       .then(function(res) {
-        if (res.error) {
-          document.getElementById('list').innerHTML =
-            '<div class="err-banner">Could not load scenarios: ' + res.error.message + '</div>';
-          return;
-        }
+        if (res.error) { log('SCENARIOS ERROR: ' + JSON.stringify(res.error)); document.getElementById('list').innerHTML = '<div class="err-banner">Could not load: ' + res.error.message + '</div>'; return; }
+        log('Scenarios OK: ' + res.data.length + ' rows');
         render(res.data);
-      });
+      }).catch(function(e){ log('LOAD EXCEPTION: ' + e.message); });
   }
 
-  /* ── CARD EVENTS ── */
   document.getElementById('list').addEventListener('click', function(e) {
     var btn = e.target.closest('[data-action]');
     if (!btn) return;
     var action = btn.getAttribute('data-action');
     var id = parseInt(btn.getAttribute('data-id'), 10);
-
     if (action === 'vote') {
       var wasVoted = btn.getAttribute('data-voted') === '1';
-      var currentVotes = parseInt(btn.getAttribute('data-votes'), 10);
-      var newVotes = wasVoted ? currentVotes - 1 : currentVotes + 1;
+      var newVotes = parseInt(btn.getAttribute('data-votes'),10) + (wasVoted?-1:1);
       if (wasVoted) { delete votedIds[id]; } else { votedIds[id] = true; }
-      sb.from('scenarios').update({ votes: newVotes }).eq('id', id)
-        .then(function(res) {
-          if (res.error) { toast('Could not save vote', true); return; }
-          load();
-        });
-
+      sb.from('scenarios').update({votes:newVotes}).eq('id',id).then(function(r){ if(r.error){log('VOTE ERROR: '+r.error.message);toast('Could not save vote',true);return;} load(); }).catch(function(e){log('VOTE EX: '+e.message);});
     } else if (action === 'feat') {
-      var nowFeatured = btn.getAttribute('data-featured') === '1';
-      sb.from('scenarios').update({ featured: !nowFeatured }).eq('id', id)
-        .then(function(res) {
-          if (res.error) { toast('Could not update', true); return; }
-          toast(nowFeatured ? 'Scenario unfeatured' : 'Scenario featured');
-          load();
-        });
-
+      var nowF = btn.getAttribute('data-featured') === '1';
+      sb.from('scenarios').update({featured:!nowF}).eq('id',id).then(function(r){ if(r.error){log('FEAT ERROR: '+r.error.message);toast('Error',true);return;} toast(nowF?'Unfeatured':'Featured'); load(); }).catch(function(e){log('FEAT EX: '+e.message);});
     } else if (action === 'ep-save') {
-      var inp = document.querySelector('.ep-in[data-id="' + id + '"]');
-      var val = inp ? inp.value.trim() || null : null;
-      sb.from('scenarios').update({ episode: val }).eq('id', id)
-        .then(function(res) {
-          if (res.error) { toast('Could not save', true); return; }
-          toast('Episode reference saved');
-          load();
-        });
-
+      var inp = document.querySelector('.ep-in[data-id="'+id+'"]');
+      var val = inp ? inp.value.trim()||null : null;
+      sb.from('scenarios').update({episode:val}).eq('id',id).then(function(r){ if(r.error){log('EP ERROR: '+r.error.message);toast('Error',true);return;} toast('Episode saved'); load(); }).catch(function(e){log('EP EX: '+e.message);});
     } else if (action === 'del') {
-      if (!confirm('Delete this scenario permanently?')) return;
-      sb.from('scenarios').delete().eq('id', id)
-        .then(function(res) {
-          if (res.error) { toast('Could not delete', true); return; }
-          toast('Scenario deleted');
-          load();
-        });
+      if (!confirm('Delete permanently?')) return;
+      sb.from('scenarios').delete().eq('id',id).then(function(r){ if(r.error){log('DEL ERROR: '+r.error.message);toast('Error',true);return;} toast('Deleted'); load(); }).catch(function(e){log('DEL EX: '+e.message);});
     }
   });
 
-  /* ── FILTERS ── */
   document.querySelectorAll('.f-btn').forEach(function(btn) {
     btn.addEventListener('click', function() {
-      document.querySelectorAll('.f-btn').forEach(function(b){ b.classList.remove('active'); });
+      document.querySelectorAll('.f-btn').forEach(function(b){b.classList.remove('active');});
       btn.classList.add('active');
       activeFilter = btn.getAttribute('data-filter');
       load();
     });
   });
 
-  /* ── SUBMIT MODAL ── */
-  document.getElementById('btnSubmit').addEventListener('click', function(){
-    if (!isEditMode) document.getElementById('submitModal').classList.add('on');
-  });
+  document.getElementById('btnSubmit').addEventListener('click', function(){ if(!isEditMode) document.getElementById('submitModal').classList.add('on'); });
   document.getElementById('btnSubmitClose').addEventListener('click', closeSubmit);
   document.getElementById('btnSubmitCancel').addEventListener('click', closeSubmit);
-  document.getElementById('submitModal').addEventListener('click', function(e){ if (e.target===this) closeSubmit(); });
+  document.getElementById('submitModal').addEventListener('click', function(e){ if(e.target===this) closeSubmit(); });
   function closeSubmit() {
     document.getElementById('submitModal').classList.remove('on');
-    document.getElementById('sTitle').value = '';
-    document.getElementById('sDesc').value = '';
-    document.getElementById('sTopic').value = '';
-    document.getElementById('submitErr').style.display = 'none';
+    document.getElementById('sTitle').value=''; document.getElementById('sDesc').value=''; document.getElementById('sTopic').value='';
+    document.getElementById('submitErr').style.display='none';
   }
   document.getElementById('btnSubmitSave').addEventListener('click', function() {
-    var t  = document.getElementById('sTitle').value.trim();
-    var d  = document.getElementById('sDesc').value.trim();
-    var tp = document.getElementById('sTopic').value;
-    if (!t || !d || !tp) { document.getElementById('submitErr').style.display = 'block'; return; }
-    document.getElementById('submitErr').style.display = 'none';
-    var btn = document.getElementById('btnSubmitSave');
-    btn.disabled = true; btn.textContent = 'Saving…';
-    sb.from('scenarios').insert([{ title:t, description:d, topic:tp }])
-      .then(function(res) {
-        btn.disabled = false; btn.textContent = 'Submit Scenario';
-        if (res.error) { toast('Could not submit: ' + res.error.message, true); return; }
-        closeSubmit(); toast('Scenario submitted — thank you'); load();
-      });
+    var t=document.getElementById('sTitle').value.trim(), d=document.getElementById('sDesc').value.trim(), tp=document.getElementById('sTopic').value;
+    if(!t||!d||!tp){document.getElementById('submitErr').style.display='block';return;}
+    document.getElementById('submitErr').style.display='none';
+    var btn=document.getElementById('btnSubmitSave'); btn.disabled=true; btn.textContent='Saving…';
+    sb.from('scenarios').insert([{title:t,description:d,topic:tp}])
+      .then(function(r){ btn.disabled=false; btn.textContent='Submit Scenario'; if(r.error){log('INSERT ERROR: '+r.error.message);toast('Error: '+r.error.message,true);return;} closeSubmit(); toast('Submitted — thank you'); load(); })
+      .catch(function(e){btn.disabled=false;btn.textContent='Submit Scenario';log('INSERT EX: '+e.message);});
   });
 
-  /* ── PIN MODAL ── */
   document.getElementById('btnAdmin').addEventListener('click', function() {
     if (isEditMode) { saveSettings(); return; }
     if (isAdmin) { showAdminPanel(); return; }
@@ -493,64 +411,58 @@
   });
   document.getElementById('btnPinClose').addEventListener('click', closePin);
   document.getElementById('btnPinCancel').addEventListener('click', closePin);
-  document.getElementById('pinModal').addEventListener('click', function(e){ if (e.target===this) closePin(); });
-  document.getElementById('pinInput').addEventListener('keydown', function(e){ if (e.key==='Enter') unlock(); });
+  document.getElementById('pinModal').addEventListener('click', function(e){ if(e.target===this) closePin(); });
+  document.getElementById('pinInput').addEventListener('keydown', function(e){ if(e.key==='Enter') unlock(); });
   document.getElementById('btnPinUnlock').addEventListener('click', unlock);
-  function closePin() {
-    document.getElementById('pinModal').classList.remove('on');
-    document.getElementById('pinInput').value = '';
-    document.getElementById('pinErr').style.display = 'none';
-  }
+  function closePin() { document.getElementById('pinModal').classList.remove('on'); document.getElementById('pinInput').value=''; document.getElementById('pinErr').style.display='none'; }
   function unlock() {
     if (document.getElementById('pinInput').value === PIN) {
-      isAdmin = true;
-      document.getElementById('adminBadge').classList.add('on');
-      document.getElementById('btnAdmin').textContent = 'Admin ▾';
+      isAdmin=true; document.getElementById('adminBadge').classList.add('on'); document.getElementById('btnAdmin').textContent='Admin ▾';
       closePin(); load(); showAdminPanel(); toast('Admin mode active');
-    } else {
-      document.getElementById('pinErr').style.display = 'block';
-      document.getElementById('pinInput').value = '';
-      document.getElementById('pinInput').focus();
-    }
+    } else { document.getElementById('pinErr').style.display='block'; document.getElementById('pinInput').value=''; document.getElementById('pinInput').focus(); }
   }
 
-  /* ── ADMIN PANEL ── */
   function showAdminPanel() {
     document.getElementById('adminModal').classList.add('on');
-    document.querySelectorAll('.modal-tab').forEach(function(t){ t.classList.remove('active'); });
-    document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
+    document.querySelectorAll('.modal-tab').forEach(function(t){t.classList.remove('active');});
+    document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active');});
     document.querySelector('[data-tab="content"]').classList.add('active');
     document.getElementById('tab-content').classList.add('active');
   }
   document.getElementById('btnAdminClose').addEventListener('click', function(){ document.getElementById('adminModal').classList.remove('on'); });
-  document.getElementById('adminModal').addEventListener('click', function(e){ if (e.target===this) this.classList.remove('on'); });
+  document.getElementById('adminModal').addEventListener('click', function(e){ if(e.target===this) this.classList.remove('on'); });
   document.querySelectorAll('.modal-tab').forEach(function(tab) {
     tab.addEventListener('click', function() {
-      document.querySelectorAll('.modal-tab').forEach(function(t){ t.classList.remove('active'); });
-      document.querySelectorAll('.tab-panel').forEach(function(p){ p.classList.remove('active'); });
+      document.querySelectorAll('.modal-tab').forEach(function(t){t.classList.remove('active');});
+      document.querySelectorAll('.tab-panel').forEach(function(p){p.classList.remove('active');});
       tab.classList.add('active');
-      document.getElementById('tab-' + tab.getAttribute('data-tab')).classList.add('active');
+      document.getElementById('tab-'+tab.getAttribute('data-tab')).classList.add('active');
     });
   });
   document.getElementById('btnAdminDone').addEventListener('click', function(){ document.getElementById('adminModal').classList.remove('on'); });
-  document.getElementById('btnEnableEdit').addEventListener('click', function(){
-    document.getElementById('adminModal').classList.remove('on');
-    enableEditMode();
+  document.getElementById('btnAdminDone2').addEventListener('click', function(){ document.getElementById('adminModal').classList.remove('on'); });
+  document.getElementById('btnCopyLog').addEventListener('click', function() {
+    if (navigator.clipboard) { navigator.clipboard.writeText(logs.join('\n')).then(function(){ toast('Log copied'); }); }
+    else { toast('Copy not supported on this browser'); }
   });
+  document.getElementById('btnEnableEdit').addEventListener('click', function(){ document.getElementById('adminModal').classList.remove('on'); enableEditMode(); });
 
-  /* ── STATIC TEXT EDIT MODE ── */
   function enableEditMode() {
-    isEditMode = true;
-    document.body.classList.add('edit-mode');
-    document.getElementById('btnAdmin').textContent = 'Save Text Changes';
-    document.querySelectorAll('[data-static]').forEach(function(el){
-      el.contentEditable = 'true';
-    });
-    toast('Click any highlighted text to edit. Click Save Text Changes when done.');
+    isEditMode=true; document.body.classList.add('edit-mode'); document.getElementById('btnAdmin').textContent='Save Text Changes';
+    document.querySelectorAll('[data-static]').forEach(function(el){ el.contentEditable='true'; });
+    toast('Click any highlighted text to edit');
+  }
+  function exitEditMode() {
+    isEditMode=false; document.body.classList.remove('edit-mode'); document.getElementById('btnAdmin').textContent='Admin ▾';
+    document.getElementById('btnAdmin').disabled=false;
+    document.querySelectorAll('[data-static]').forEach(function(el){ el.contentEditable='false'; });
   }
 
-  function exitEditMode() {
-    isEditMode = false;
-    document.body.classList.remove('edit-mode');
-    document.getElementById('btnAdmin').textContent = 'Admin ▾';
-    document.getElement
+  log('App starting');
+  log('Supabase URL: ' + SB_URL);
+  loadSettings();
+  load();
+})();
+</script>
+</body>
+</html>
