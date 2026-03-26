@@ -38,7 +38,7 @@ body{font-family:'Jost','Futura','Century Gothic',sans-serif;background:var(--of
 .hero-body-inner{max-width:480px;margin:0 auto;}
 .hero-body-text{font-size:16px;font-weight:300;color:var(--g500);line-height:1.65;letter-spacing:0.3px;}
 .gold-rule{height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.4;}
-.toolbar{background:var(--white);border-bottom:1px solid var(--g200);padding:0 24px;display:flex;align-items:center;justify-content:space-between;}
+.toolbar{background:var(--white);border-bottom:1px solid var(--g200);padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;}
 .filters{display:flex;}
 .f-btn{font-family:'Jost',sans-serif;font-size:12px;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--g300);background:transparent;border:none;border-bottom:2px solid transparent;padding:16px 14px 14px;cursor:pointer;transition:all .2s;}
 .f-btn:hover{color:var(--navy);}
@@ -122,9 +122,11 @@ body{font-family:'Jost','Futura','Century Gothic',sans-serif;background:var(--of
 .toast{display:none;position:fixed;bottom:24px;right:24px;background:var(--navy);color:var(--white);font-size:12px;font-weight:600;letter-spacing:0.8px;padding:13px 18px;border-left:3px solid var(--gold);z-index:300;animation:fadeUp .25s ease;border-radius:0 var(--r) var(--r) 0;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:600px){.hero-shell,.hero-body-band,.toolbar,.main{padding-left:16px;padding-right:16px;}.main{padding-top:20px;}.hero-logo-row{gap:14px;}.logo-mark{width:40px;height:40px;}.hd-div{height:24px;}.hd-app{font-size:15px;}.admin-badge{display:none !important;}}
-.priv-btn{font-family:'Jost',sans-serif;font-size:13px;font-weight:600;letter-spacing:0.8px;background:transparent;color:var(--g500);border:1px solid var(--g200);padding:10px 18px;border-radius:var(--r);cursor:pointer;transition:all .2s;white-space:nowrap;}
-.priv-btn:hover{border-color:var(--navy);color:var(--navy);}
-.toolbar-btns{display:flex;gap:10px;align-items:center;flex-shrink:0;}
+.toolbar-btns{display:flex;gap:16px;align-items:stretch;flex-shrink:0;padding:10px 0;}
+.toolbar-btn-wrap{display:flex;flex-direction:column;align-items:center;gap:4px;}
+.toolbar-btn-desc{font-size:11px;font-weight:300;color:var(--g300);letter-spacing:0.3px;white-space:nowrap;}
+.priv-btn{font-family:'Jost',sans-serif;font-size:13px;font-weight:500;letter-spacing:0.5px;background:transparent;color:var(--navy);border:0.5px solid var(--g200);padding:9px 18px;border-radius:var(--r);cursor:pointer;transition:all .2s;white-space:nowrap;}
+.priv-btn:hover{border-color:var(--navy);}
 </style>
 </head>
 <body>
@@ -150,8 +152,14 @@ body{font-family:'Jost','Futura','Century Gothic',sans-serif;background:var(--of
     <button class="f-btn" data-filter="open">Open</button>
   </div>
   <div class="toolbar-btns">
-    <button class="priv-btn" id="btnPrivate">Send privately</button>
-    <button class="sub-btn" id="btnSubmit">+ Post publicly</button>
+    <div class="toolbar-btn-wrap">
+      <button class="priv-btn" id="btnPrivate">Send privately</button>
+      <span class="toolbar-btn-desc">Goes directly to Pieter</span>
+    </div>
+    <div class="toolbar-btn-wrap">
+      <button class="sub-btn" id="btnSubmit">+ Post publicly</button>
+      <span class="toolbar-btn-desc">Others can see &amp; vote</span>
+    </div>
   </div>
 </div>
 <div class="main" id="list">
@@ -590,7 +598,7 @@ body{font-family:'Jost','Futura','Century Gothic',sans-serif;background:var(--of
       + '</div></div>';
  
     var sent = false;
-    if (RESEND_KEY && RESEND_KEY !== 'your-resend-key-here') {
+    if (RESEND_KEY) {
       try {
         var r = await fetch('https://api.resend.com/emails', {
           method: 'POST',
