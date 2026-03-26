@@ -122,6 +122,9 @@ body{font-family:'Jost','Futura','Century Gothic',sans-serif;background:var(--of
 .toast{display:none;position:fixed;bottom:24px;right:24px;background:var(--navy);color:var(--white);font-size:12px;font-weight:600;letter-spacing:0.8px;padding:13px 18px;border-left:3px solid var(--gold);z-index:300;animation:fadeUp .25s ease;border-radius:0 var(--r) var(--r) 0;}
 @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 @media(max-width:600px){.hero-shell,.hero-body-band,.toolbar,.main{padding-left:16px;padding-right:16px;}.main{padding-top:20px;}.hero-logo-row{gap:14px;}.logo-mark{width:40px;height:40px;}.hd-div{height:24px;}.hd-app{font-size:15px;}.admin-badge{display:none !important;}}
+.priv-btn{font-family:'Jost',sans-serif;font-size:13px;font-weight:600;letter-spacing:0.8px;background:transparent;color:var(--g500);border:1px solid var(--g200);padding:10px 18px;border-radius:var(--r);cursor:pointer;transition:all .2s;white-space:nowrap;}
+.priv-btn:hover{border-color:var(--navy);color:var(--navy);}
+.toolbar-btns{display:flex;gap:10px;align-items:center;flex-shrink:0;}
 </style>
 </head>
 <body>
@@ -146,7 +149,10 @@ body{font-family:'Jost','Futura','Century Gothic',sans-serif;background:var(--of
     <button class="f-btn" data-filter="featured">Featured</button>
     <button class="f-btn" data-filter="open">Open</button>
   </div>
-  <button class="sub-btn" id="btnSubmit">+ Submit a scenario</button>
+  <div class="toolbar-btns">
+    <button class="priv-btn" id="btnPrivate">Send privately</button>
+    <button class="sub-btn" id="btnSubmit">+ Post publicly</button>
+  </div>
 </div>
 <div class="main" id="list">
   <div class="loading"><div class="loading-dot"></div><div class="loading-dot"></div><div class="loading-dot"></div></div>
@@ -175,6 +181,35 @@ body{font-family:'Jost','Futura','Century Gothic',sans-serif;background:var(--of
       </div>
       <div class="field-err" id="submitErr">Please complete all fields.</div>
       <div class="modal-actions"><button class="btn-sec" id="btnSubmitCancel">Cancel</button><button class="btn-pri" id="btnSubmitSave">Submit scenario</button></div>
+    </div>
+  </div>
+</div>
+<!-- PRIVATE MODAL -->
+<div class="overlay" id="privateModal">
+  <div class="modal">
+    <div class="modal-hd"><div class="modal-hd-l"><div class="modal-red"></div><span class="modal-title">Send scenario privately</span></div><button class="modal-x" id="btnPrivateClose">&#10005;</button></div>
+    <div class="modal-bd">
+      <p style="font-size:14px;font-weight:300;color:var(--g500);line-height:1.65;letter-spacing:0.3px;margin-bottom:20px;">Your submission goes directly to Pieter and will not be posted publicly.</p>
+      <div class="field"><label>Your name</label><input type="text" id="pName" placeholder="How should I address you?"></div>
+      <div class="field"><label>Your email</label><input type="email" id="pEmail" placeholder="So I can follow up with you"></div>
+      <div class="field"><label>Scenario</label><textarea id="pScenario" placeholder="Describe the scenario in anonymised terms. Do not include client names or identifying details." style="min-height:120px;"></textarea></div>
+      <div class="field"><label>Topic</label>
+        <select id="pTopic">
+          <option value="">Select a topic…</option>
+          <option>Capital Gains Tax</option>
+          <option>Income Tax — Corporate</option>
+          <option>Income Tax — Individual</option>
+          <option>VAT</option>
+          <option>Transfer Pricing</option>
+          <option>Tax Administration</option>
+          <option>IFRS / Accounting</option>
+          <option>Cross-Border / International</option>
+          <option>Estate Planning</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="field-err" id="privateErr">Please complete all required fields.</div>
+      <div class="modal-actions"><button class="btn-sec" id="btnPrivateCancel">Cancel</button><button class="btn-pri" id="btnPrivateSend">Send to Pieter</button></div>
     </div>
   </div>
 </div>
@@ -227,7 +262,9 @@ body{font-family:'Jost','Futura','Century Gothic',sans-serif;background:var(--of
  
   var SB_URL    = 'https://jrjycyspwhbsxdpwmthr.supabase.co';
   var SB_KEY    = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpyanljeXNwd2hic3hkcHdtdGhyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI0Mjk0MTcsImV4cCI6MjA4ODAwNTQxN30.ByNGRGs3SstatMrDsbE-2IJm31ir5b6YHjZYkbj8gKY';
-  var ADMIN_PIN = '2810';
+  var RESEND_KEY = 're_aRxsotWR_DAd2jewbnEPrhwNs1eYnMtRX';
+  var RECIPIENT  = 'pieter@pvdz.co.za';
+  var ADMIN_PIN  = '2810';
  
   var sb = supabase.createClient(SB_URL, SB_KEY);
   var isAdmin = false;
@@ -511,6 +548,73 @@ body{font-family:'Jost','Futura','Century Gothic',sans-serif;background:var(--of
     document.body.classList.remove('edit-mode');
     document.querySelectorAll('[data-static]').forEach(function(el){ el.contentEditable='false'; });
   }
+ 
+  // ── PRIVATE SUBMISSION ──────────────────────────────────────
+  document.getElementById('btnPrivate').addEventListener('click', function(){
+    if (!isEditMode) document.getElementById('privateModal').classList.add('on');
+  });
+  document.getElementById('btnPrivateClose').addEventListener('click', closePrivate);
+  document.getElementById('btnPrivateCancel').addEventListener('click', closePrivate);
+  document.getElementById('privateModal').addEventListener('click', function(e){ if(e.target===e.currentTarget) closePrivate(); });
+ 
+  function closePrivate(){
+    document.getElementById('privateModal').classList.remove('on');
+    document.getElementById('pName').value='';
+    document.getElementById('pEmail').value='';
+    document.getElementById('pScenario').value='';
+    document.getElementById('pTopic').value='';
+    document.getElementById('privateErr').style.display='none';
+  }
+ 
+  document.getElementById('btnPrivateSend').addEventListener('click', async function(){
+    var name     = document.getElementById('pName').value.trim();
+    var email    = document.getElementById('pEmail').value.trim();
+    var scenario = document.getElementById('pScenario').value.trim();
+    var topic    = document.getElementById('pTopic').value;
+    if (!name || !email || !scenario || !topic){
+      document.getElementById('privateErr').style.display='block'; return;
+    }
+    document.getElementById('privateErr').style.display='none';
+    var btn = document.getElementById('btnPrivateSend');
+    btn.disabled=true; btn.textContent='Sending\u2026';
+ 
+    var subj = 'Tax Break scenario (private): ' + topic + ' \u2014 ' + name;
+    var htmlBody = '<div style="font-family:sans-serif;color:#0d182d;max-width:560px">'
+      + '<div style="background:#0d182d;padding:20px 24px;border-radius:8px 8px 0 0">'
+      + '<h2 style="color:#b98b38;margin:0;font-size:18px">Tax Break \u2014 Private Scenario</h2></div>'
+      + '<div style="padding:24px;border:1px solid #E0DCD3;border-top:none;border-radius:0 0 8px 8px">'
+      + '<p style="margin:0 0 4px"><strong>From:</strong> ' + name + '</p>'
+      + '<p style="margin:0 0 4px"><strong>Email:</strong> <a href="mailto:' + email + '">' + email + '</a></p>'
+      + '<p style="margin:0 0 16px"><strong>Topic:</strong> ' + topic + '</p>'
+      + '<p style="padding:12px;background:#F8F6F1;border-radius:6px;font-size:14px;line-height:1.6;margin:0">' + scenario.replace(/\n/g,'<br>') + '</p>'
+      + '</div></div>';
+ 
+    var sent = false;
+    if (RESEND_KEY && RESEND_KEY !== 'your-resend-key-here') {
+      try {
+        var r = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer '+RESEND_KEY, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ from:'noreply@pvdz.co.za', to:RECIPIENT, reply_to:email, subject:subj, html:htmlBody })
+        });
+        if (r.ok) sent = true;
+        else { var d=await r.json(); log('Resend error: '+(d.message||r.status)); }
+      } catch(e){ log('Resend exception: '+e.message); }
+    }
+ 
+    if (!sent) {
+      // Fallback: mailto
+      var plain = 'From: '+name+'\nEmail: '+email+'\nTopic: '+topic+'\n\n'+scenario;
+      window.open('mailto:'+RECIPIENT+'?subject='+encodeURIComponent(subj)+'&body='+encodeURIComponent(plain), '_blank');
+      sent = true;
+    }
+ 
+    if (sent) {
+      closePrivate();
+      toast('Scenario sent to Pieter');
+    }
+    btn.disabled=false; btn.textContent='Send to Pieter';
+  });
  
   function init(){
     log('init()');
